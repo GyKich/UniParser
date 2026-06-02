@@ -51,7 +51,7 @@ public class PriceMonitor : BackgroundService
 		{
 			if (cancellationToken.IsCancellationRequested) break;
 
-			Console.WriteLine($"[{DateTime.Now}][WORKER Checking product: {product.Title}]");
+			Console.WriteLine($"[{DateTime.Now}][WORKER] Checking product: {product.Title}]");
 
 			var parsedData = await parser.ParseThingAsync(product.Url);
 

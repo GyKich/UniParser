@@ -66,73 +66,35 @@ public class TelegramBotHandler
 			await _botClient.SendMessage(chatId: chatId, text: "Wrong link", cancellationToken: cancellationToken);
 			return;
 		}
-		using (AppDbContext db = new AppDbContext())
+		var subService = new SubscriptionService();
+		var (isNew, product) = await subService.SubscribeUserAsync(chatId, parsedData, cancellationToken);
+
+		if (isNew)
 		{
-			db.Database.EnsureCreated();
+            string responseText = $"Successfully added to your subscription list!\n" +
+                              $"*{product.Title}*\n" +
+                              $"Current price: {product.FixedPrice:N0} ₸\n\n" +
+                              $"I'll send you notification when price change";
 
-			var existingProduct = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
-				db.Products, p => p.Url == url, cancellationToken);
+			await _botClient.SendMessage(
+				chatId: chatId,
+				text: responseText,
+				parseMode: ParseMode.Markdown,
+				cancellationToken: cancellationToken);
 
-			int productId;
+        }
+		else
+		{
+            string responseText = $"This item is already in your subscription list!\n" +
+                              $"*{product.Title}*\n" +
+                              $"Current price: {product.FixedPrice:N0} ₸\n\n" +
+                              $"I'll send you notification when price change";
 
-			if(existingProduct == null)
-			{
-                var newProduct = new TrackedProduct
-                {
-                    Title = parsedData.Title,
-                    Url = parsedData.Url,
-                    FixedPrice = parsedData.Price,
-                    UpdatedAt = DateTime.Now
-                };
-                db.Products.Add(newProduct);
-                await db.SaveChangesAsync(cancellationToken);
-
-                productId = newProduct.Id;
-                Console.WriteLine($"[DB] Added new product with ID: {productId}");
-            }
-            else
-            {
-                productId = existingProduct.Id;
-                Console.WriteLine($"[DB] Product is already exist with ID: {productId}");
-
-                existingProduct.FixedPrice = parsedData.Price;
-                existingProduct.UpdatedAt = DateTime.Now;
-                await db.SaveChangesAsync(cancellationToken);
-            }
-            var existingSub = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
-                    db.Subscriptions, s => s.ChatId == chatId && s.TrackedProductId == productId, cancellationToken);
-
-            if (existingSub == null)
-            {
-                var newSubscription = new UserMonitored
-                {
-                    ChatId = chatId,
-                    TrackedProductId = productId
-                };
-                db.Subscriptions.Add(newSubscription);
-                await db.SaveChangesAsync(cancellationToken);
-
-                string responseText = $"✅ Товар успешно добавлен в твой список мониторинга!\n\n" +
-                                      $"📦 *{parsedData.Title}*\n" +
-                                      $"💰 Текущая цена: {parsedData.Price:N0} ₸\n\n" +
-                                      $"Я пришлю уведомление, если цена изменится.";
-
-                await _botClient.SendMessage(
-                    chatId: chatId,
-                    text: responseText,
-                    parseMode: ParseMode.Markdown,
-                    cancellationToken: cancellationToken
-                );
-            }
-            else
-            {
-                await _botClient.SendMessage(
-                    chatId: chatId,
-                    text: $"⚠️ Товар уже зафиксирован!\n\n📦 *{parsedData.Title}*\n💰 Цена в базе: {parsedData.Price:N0} ₸",
-                    parseMode: ParseMode.Markdown,
-                    cancellationToken: cancellationToken
-                );
-            }
+            await _botClient.SendMessage(
+                chatId: chatId,
+                text: responseText,
+                parseMode: ParseMode.Markdown,
+                cancellationToken: cancellationToken);
         }
 	}
 	public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
