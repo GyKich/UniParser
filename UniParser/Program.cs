@@ -14,17 +14,17 @@ public class Program
 
         if (isMigrationMode)
         {
-            Console.WriteLine("[Система] Обнаружен режим миграций. Настройка конфигурации...");
-            return; // Мгновенно выходим! Бот не запустится, файлы не заблокируются.
+            Console.WriteLine($"[{DateTime.Now}][SYSTEM] MIGRATION MODE. Setting up configuration...");
+            return;
         }
-        Console.WriteLine("=== ЗАПУСК СИСТЕМЫ ===");
+        Console.WriteLine($"[{DateTime.Now}][SYSTEM] START UP");
 
         string keyPath = "key.txt";
 
         if (!File.Exists(keyPath))
         {
-            Console.WriteLine($"[Критическая ошибка] Файл настроек '{keyPath}' не найден!");
-            Console.WriteLine("Создай файл key.txt в папке с проектом и вставь туда токен от BotFather.");
+            Console.WriteLine($"[{DateTime.Now}][ERROR] Key file '{keyPath}' not found!");
+            Console.WriteLine("Create key.txt file in the project folder and insert Telegram bot key in it");
             return;
         }
         string BotToken = (await File.ReadAllTextAsync(keyPath)).Trim();
@@ -44,7 +44,7 @@ public class Program
 
         var me = await botClient.GetMe(cancellationToken: cts.Token);
 
-        Console.WriteLine($"Bot started successfully");
+        Console.WriteLine($"[{DateTime.Now}][SYSTEM] Bot started successfully");
 
         var priceWorker = new PriceMonitor(botClient);
         Task workerTask = priceWorker.StartAsync(cts.Token);

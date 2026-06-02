@@ -49,7 +49,7 @@ namespace UniParser
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PARSER ERROR]: {ex.Message}");
+                Console.WriteLine($"[{DateTime.Now}][PARSER ERROR]: {ex.Message}");
                 return null;
             }
         }
