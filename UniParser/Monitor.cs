@@ -11,7 +11,9 @@ public class PriceMonitor : BackgroundService
 	private readonly ITelegramBotClient _botClient;
 
 	private readonly TimeSpan _checkInterval = TimeSpan.FromHours(2);
-	public PriceMonitor(ITelegramBotClient botClient)
+
+    private readonly Random _random = new Random();
+    public PriceMonitor(ITelegramBotClient botClient)
 	{
 		_botClient = botClient;
 	}
@@ -100,7 +102,8 @@ public class PriceMonitor : BackgroundService
 			}
 
 			Console.WriteLine($"[{DateTime.Now}][WORKER] Waiting crawl-delay...");
-			await Task.Delay(10000, cancellationToken);
+			int delay = _random.Next(7000, 15000);
+			await Task.Delay(delay, cancellationToken);
 		}
 
 		await db.SaveChangesAsync(cancellationToken);

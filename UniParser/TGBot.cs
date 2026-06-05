@@ -25,13 +25,13 @@ public class TelegramBotHandler
 		var chatId = message.Chat.Id;
 		var messageText = message.Text.Trim();
 
-		Console.WriteLine($"[BOT] Message from {chatId}: \"{messageText}\"");
+		Console.WriteLine($"[{DateTime.Now}][BOT] Message from {chatId}: \"{messageText}\"");
 
 		if (messageText.StartsWith("/"))
 		{
 			await HandleCommandAsync(chatId, messageText, cancellationToken);
 		}
-		else if (messageText.StartsWith("https://kaspi.kz"))
+		else if (messageText.Contains("kaspi.kz/shop"))
 		{
 			await HandleLinkAsync(chatId, messageText, cancellationToken);
 		}
@@ -99,7 +99,7 @@ public class TelegramBotHandler
 	}
 	public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
 	{
-		Console.WriteLine($"[BOT] TELEGRAM API ERROR: {exception.Message}");
+		Console.WriteLine($"[{DateTime.Now}][BOT] TELEGRAM API ERROR: {exception.Message}");
 		return Task.CompletedTask;
 	}
 }
