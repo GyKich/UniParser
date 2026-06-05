@@ -39,7 +39,7 @@ public class TelegramBotHandler
 		{
 			await _botClient.SendMessage(
 				chatId: chatId,
-				text:"Wrong message: only \"/start\" or links",
+				text: "Wrong message: only \"/start\", \"/unsubscribe\" or links",
 				cancellationToken: cancellationToken
 			);
 		}
@@ -54,6 +54,42 @@ public class TelegramBotHandler
 				cancellationToken: cancellation
 			);
 		}
+		if (command.StartsWith("/unsubscribe"))
+		{
+			string url = command.Replace("/unsubscribe ", "").Trim();
+
+			if (string.IsNullOrEmpty(url) || !url.Contains("https://kaspi.kz"))
+			{
+				await _botClient.SendMessage(
+					chatId: chatId,
+					text: "Wrong Link, please enter a valid link after the command.",
+					cancellationToken: cancellation
+				);
+				return;
+			}
+
+			await _botClient.SendMessage(chatId: chatId, text: "Processing your request", cancellationToken: cancellation);
+
+			var subService = new SubscriptionService();
+			var isRemoved = await subService.UnSubscribeUserAsync(chatId,url,cancellation);
+
+			if (isRemoved)
+			{
+                await _botClient.SendMessage(
+                    chatId: chatId,
+                    text: "Your subscription has been removed. You will no longer receive price updates for this item.",
+                    cancellationToken: cancellation
+                );
+            }
+			else
+			{
+                await _botClient.SendMessage(
+                    chatId: chatId,
+                    text: "Subscription not found. Make sure you are subscribed to this exact link.",
+                    cancellationToken: cancellation
+                );
+            }
+        }
 	}
 	private async Task HandleLinkAsync(long chatId, string url, CancellationToken cancellationToken)
 	{
