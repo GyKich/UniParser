@@ -16,7 +16,7 @@ public class PriceMonitor : BackgroundService
     public PriceMonitor(ITelegramBotClient botClient)
 	{
 		_botClient = botClient;
-	}
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{

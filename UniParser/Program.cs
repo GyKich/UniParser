@@ -19,15 +19,26 @@ public class Program
         }
         Console.WriteLine($"[{DateTime.Now}][SYSTEM] START UP");
 
-        string keyPath = "key.txt";
-
-        if (!File.Exists(keyPath))
+        using (var db = new AppDbContext())
         {
-            Console.WriteLine($"[{DateTime.Now}][ERROR] Key file '{keyPath}' not found!");
-            Console.WriteLine("Create key.txt file in the project folder and insert Telegram bot key in it");
-            return;
+            db.Database.EnsureCreated();
         }
-        string BotToken = (await File.ReadAllTextAsync(keyPath)).Trim();
+
+        string BotToken = Environment.GetEnvironmentVariable("TELEGRAM_TOKEN");
+
+        if (string.IsNullOrEmpty(BotToken))
+        {
+            string keyPath = "key.txt";
+
+            if (!File.Exists(keyPath))
+            {
+                Console.WriteLine($"[{DateTime.Now}][ERROR] Key file '{keyPath}' not found!");
+                Console.WriteLine("Create key.txt file in the project folder and insert Telegram bot key in it");
+                return;
+            }
+            BotToken = (await File.ReadAllTextAsync(keyPath)).Trim();
+        }
+        
 
         var botClient = new TelegramBotClient(BotToken);
 
@@ -50,7 +61,7 @@ public class Program
         Task workerTask = priceWorker.StartAsync(cts.Token);
 
         Console.WriteLine("[SYSTEM] Press ENTER to stop");
-        Console.ReadLine();
+        await Task.Delay(Timeout.Infinite);
 
         cts.Cancel();
 

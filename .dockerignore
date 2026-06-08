@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/publish/
+**/key/
+
+.vs/
+.idea/
+.vscode/
+
+*.user
+.dockerignore
+Dockerfile
